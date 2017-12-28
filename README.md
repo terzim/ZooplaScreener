@@ -92,3 +92,10 @@ The screen can be run one-off
 python ZooplaScreener.py
 ```
 or - in alternative - scheduled for periodical execution via crontab (and - possibly - a VPS). For instructions to setup crontab on a VPS, read a [shorthand guide here](https://www.digitalocean.com/community/tutorials/how-to-use-cron-to-automate-tasks-on-a-vps). 
+
+### Credits
+
+Property information powered by Zoopla
+
+[<img src="https://www.zoopla.co.uk/static/images/mashery/powered-by-zoopla-150x73.png">](http://www.zoopla.co.uk)
+
