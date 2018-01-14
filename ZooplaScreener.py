@@ -43,7 +43,7 @@ def generateHtmlOutput(output_fields, search):
     return output_string
 
 
-def sendZooplaScreenerViaEmail(data, email_address_recipient, email_address_username, pwd, server_name, port):
+def sendZooplaScreenerViaEmail(area, data, email_address_recipient, email_address_username, pwd, server_name, port):
 
     # You must configure these smpt-server settings before using this script
     use_tsl = True  # For Gmail use True
@@ -56,7 +56,7 @@ def sendZooplaScreenerViaEmail(data, email_address_recipient, email_address_user
 
     # Example email message contents
     message_recipient = email_address_recipient
-    message_title = 'Zoopla FlatScreener - ' + adesso
+    message_title = area + ' - ZooplaScreener - ' + adesso
     message_text_list = data
     message_attachment_path = ''  # Set this to the full path of the file you want to attach to the mail or to ''
     # if you do not want to attach anything.
@@ -155,50 +155,58 @@ def sendZooplaScreenerViaEmail(data, email_address_recipient, email_address_user
 zoopla_bot_path = os.path.dirname(os.path.abspath(__file__))
 
 # Reads the config file
-configFileName = 'zoopla_config.ini'
-config = configparser.ConfigParser()
-try:
-    config.read(os.path.join(zoopla_bot_path, configFileName))
-except IOError:
-    print('Config does not exist')
-    sys.exit(1)
+#configFileName = 'zoopla_config.ini'
 
-api_key = config['api_data']['api_key']
+namesofconfigs = ["zoopla_config1.ini","zoopla_config2.ini","zoopla_config3.ini"]
 
-zoopla = Zoopla(api_key=api_key, debug=True, wait_on_rate_limit=True)
+for configFileName in namesofconfigs:
+    config = configparser.ConfigParser()
+    try:
+        config.read(os.path.join(zoopla_bot_path, configFileName))
+    except IOError:
+        print('Config does not exist')
+        sys.exit(1)
 
-search_params = {}
+    api_key = config['api_data']['api_key']
 
-for key in config['flat_data_str']:
-    if config['flat_data_str'][key]:
-        search_params[key] = config['flat_data_str'][key]
+    zoopla = Zoopla(api_key=api_key, debug=True, wait_on_rate_limit=True)
 
-for key in config['flat_data_num']:
-    if config['flat_data_num'][key]:
-        search_params[key] = int(config['flat_data_num'][key])
+    search_params = {}
 
-try:
-    search = zoopla.search_property_listings(params=search_params)
-except Exception:
-    print("Something went wrong!")
-    sys.exit(1)
+    for key in config['flat_data_str']:
+        if config['flat_data_str'][key]:
+            search_params[key] = config['flat_data_str'][key]
 
-# Email Data
-recipient = config['email_data']['recipient'].replace(" ", "").split(',')
-sender = config['email_data']['sender']
-pwd_sender = config['email_data']['pwd_sender']
-server_name = config['email_data']['server_name']
-server_port = config['email_data']['server_port']
+    for key in config['flat_data_num']:
+        if config['flat_data_num'][key]:
+            search_params[key] = int(config['flat_data_num'][key])
 
-# Set send to True if you want to use email module and send
-send = config['email_data']['send_email'].lower()
+    try:
+        search = zoopla.search_property_listings(params=search_params)
+    except Exception:
+        print("Something went wrong!")
+        sys.exit(1)
 
-output_fields = config['output']['output_fields'].lower().replace(" ", "").split(',')
+    # Email Data
+    recipient = config['email_data']['recipient'].replace(" ", "").split(',')
+    sender = config['email_data']['sender']
+    pwd_sender = config['email_data']['pwd_sender']
+    server_name = config['email_data']['server_name']
+    server_port = config['email_data']['server_port']
 
-output_string = generateHtmlOutput(output_fields, search)
+    # Set send to True if you want to use email module and send
+    send = config['email_data']['send_email'].lower()
 
-if send == "true":
-    print("\nSending....")
-    sendZooplaScreenerViaEmail(output_string, recipient, sender, pwd_sender, server_name, server_port)  # send via email
-else:
-    print("\nClosing module without sending....")
+    output_fields = config['output']['output_fields'].lower().replace(" ", "").split(',')
+
+    output_string = generateHtmlOutput(output_fields, search)
+
+    area = search_params['area']
+
+    if send == "true":
+        print("\nSending....")
+        sendZooplaScreenerViaEmail(area, output_string, recipient, sender, pwd_sender, server_name, server_port)  # send via email
+    else:
+        print("\nClosing module without sending....")
+
+    time.sleep(5)
